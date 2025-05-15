@@ -1,0 +1,85 @@
+from Room import Room
+import random
+
+class Wumpus_World():
+    def __init__(self, grid_size):
+        self.grid_size = grid_size
+        self.grid = [[Room() for _ in range(grid_size)] for _ in range(grid_size)]
+        self.occupied_positions = set()
+        self.pit_positions = []
+        self.place_wumpus()
+        self.place_pit(2)
+        self.place_gold(3)
+        self.place_stench()
+        self.place_breeze()
+        print(self.get_cell_data(2,3))
+
+    def random_unoccupied_position(self):
+        while True:
+            x = random.randint(0, self.grid_size - 1)
+            y = random.randint(0, self.grid_size - 1)
+            if (x, y) not in self.occupied_positions:
+                if x!=0 and y!=0:
+                  return x, y
+
+    def place_wumpus(self):
+        self.wumpus_x, self.wumpus_y = self.random_unoccupied_position()
+        self.grid[self.wumpus_x][self.wumpus_y].wumpus = True
+        self.occupied_positions.add((self.wumpus_x, self.wumpus_y))
+        print(f"Wumpus placed at: ({self.wumpus_x}, {self.wumpus_y})")
+
+    def place_pit(self, no_of_pits):
+        for _ in range(no_of_pits):
+            pitx, pity = self.random_unoccupied_position()
+            self.grid[pitx][pity].pit = True
+            self.occupied_positions.add((pitx, pity))
+            self.pit_positions.append((pitx, pity))
+            print(f"Pits placed at: ({pitx}, {pity})")
+
+    def place_gold(self, no_of_gold):
+        for _ in range(no_of_gold):
+            goldx, goldy = self.random_unoccupied_position()
+            self.grid[goldx][goldy].gold = True
+            self.occupied_positions.add((goldx, goldy))
+            print(f"Gold placed at: ({goldx}, {goldy})")
+
+    def place_stench(self):
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Up, Down, Left, Right
+        for dx, dy in directions:
+            nx, ny = self.wumpus_x + dx, self.wumpus_y + dy
+            if 0 <= nx < self.grid_size and 0 <= ny < self.grid_size:
+                self.grid[nx][ny].stench = True
+                print("placed stench at :",nx,ny)
+
+    def place_breeze(self):
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Up, Down, Left, Right
+        for pitx, pity in self.pit_positions:
+            for dx, dy in directions:
+                nx, ny = pitx + dx, pity + dy
+                if 0 <= nx < self.grid_size and 0 <= ny < self.grid_size:
+                    self.grid[nx][ny].breeze = True
+                    print("placed breeze at :", nx, ny)
+
+    def get_cell_data(self,x,y):
+        print("Cell data :")
+        if 0<=x<self.grid_size and 0<=y<self.grid_size:
+            room=self.grid[x][y]
+            return{
+                "Wumpus :":room.wumpus,
+                "Gold :":room.gold,
+                "Stench :":room.stench,
+                "Breeze :":room.breeze,
+                "Pit :":room.pit,
+                "Visited :":room.visited,
+            }
+        else:
+            raise IndexError("Out of bounds")
+
+    def get_gold_positions(self):
+        gold_positions = []
+        for x in range(self.grid_size):
+            for y in range(self.grid_size):
+                if self.grid[x][y].gold:
+                    gold_positions.append((x, y))
+        return gold_positions
+world = Wumpus_World(4)
