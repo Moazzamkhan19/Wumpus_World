@@ -1,0 +1,11 @@
+class Room():
+    def __init__(self):         #constructor initializing the attributes of a ROOM
+        self.wumpus=False
+        self.breeze=False
+        self.pit=False
+        self.visited=False
+        self.gold=False
+        self.stench=False
+
+    def __str__(self):          #representing the object as a string
+        return f"Visited: {self.visited}, Wumpus: {self.wumpus}, Pit: {self.pit}, Gold: {self.gold}, Breeze: {self.breeze}, Stench: {self.stench}"
