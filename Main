@@ -1,0 +1,6 @@
+from Wumpus_World import Wumpus_World
+from Agent import Agent  # if you saved Agent in agent.py
+
+if __name__ == "__main__":
+    world = Wumpus_World(grid_size=4)
+    agent = Agent(world)
