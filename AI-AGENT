@@ -1,0 +1,79 @@
+import heapq
+
+class AI_Agent():
+    def __init__(self, world):
+        self.world = world
+        self.grid_size = world.grid_size
+        self.curr_position = (0, 0)
+        self.position = (0, 0)
+        self.score = 0
+        self.alive = True
+        self.gold_collected = 0
+        self.visited = set()
+        self.visited.add(self.curr_position)
+
+    def Move(self):
+        gold_positions = self.world.get_gold_positions()
+        if not gold_positions:
+            print("No gold in the world!")
+            return
+        goal = gold_positions[0]  # Take the first gold location
+        path = self.A_Star(self.curr_position, goal)
+
+        if path:
+            print("Path to gold found:", path)
+            for step in path[1:]:  # Skip the starting position
+                self.curr_position = step
+                self.visited.add(step)
+                print(f"Moved to {step}")
+                if self.world.grid[step[0]][step[1]].gold:
+                    print("🎉 Gold collected!")
+                    self.gold_collected += 1
+                    self.world.grid[step[0]][step[1]].gold = False
+        else:
+            print("No path found to the gold.")
+
+    def A_Star(self, start, goal):
+        def heuristic(pos, goal):
+            return abs(pos[0] - goal[0]) + abs(pos[1] - goal[1])
+
+        open_set = []
+        heapq.heappush(open_set, (0 + heuristic(start, goal), 0, start, [start]))
+        visited = set()
+
+        while open_set:
+            f_score, g_score, current, path = heapq.heappop(open_set)
+            if current in visited:
+                continue
+            visited.add(current)
+
+            if current == goal:
+                return path
+
+            for neighbor in self.get_neighbour(current):
+                if neighbor in visited:
+                    continue
+                if not self.is_safe(neighbor):
+                    continue
+                new_g = g_score + 1
+                new_f = new_g + heuristic(neighbor, goal)
+                heapq.heappush(open_set, (new_f, new_g, neighbor, path + [neighbor]))
+
+        return None
+
+    def is_safe(self, pos):
+        x, y = pos
+        cell = self.world.grid[x][y]
+        if cell.pit or cell.wumpus:
+            return False
+        return True
+
+    def get_neighbour(self, pos):
+        x, y = pos
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Up, Down, Left, Right
+        neighbours = []
+        for dx, dy in directions:
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < self.grid_size and 0 <= ny < self.grid_size:
+                neighbours.append((nx, ny))
+        return neighbours
